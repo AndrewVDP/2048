@@ -4,30 +4,34 @@
 #include <cstdlib>
 #include <stdio.h>
 #include <time.h>
+//#include <ncurses.h>  // use with getch()
+
 
 using namespace std;
+
 
 class TwoZeroFourEight
 {
 protected:
 	int size;
 	int zero;
-	vector<int> d1;
-	vector <vector <d1> > game;
+	int game[4][4];
+	vector <int> v;
+	int b[4][4];
+	int arr[4][4];
 public:
 	TwoZeroFourEight();
 	TwoZeroFourEight(int s, int z);
 	void resetGame();
 	void moveLeft();
-	void moveRight();
-	void moveUp();
-	void moveDown();
-	void printGame();//
+	void printGame();
 	void playGame();
-	void addRandomTIle();
-	bool gameOver();//
-	bool gameWin();//
-	void collapseZeros();
+	void addRandomTile();
+	bool gameOver();
+	bool gameWin();
+	void collapseZerosLeft();
+	bool movement(int j[4][4]);
+	void rotateBoard();
 };
 //--------------------------------------------
 TwoZeroFourEight::TwoZeroFourEight()
@@ -47,125 +51,77 @@ void TwoZeroFourEight::resetGame()
 	for (int r=0; r<size; r++)
 	{
 		for(int c=0; c<size; c++)
-		{
 			game[r][c] = zero;
-		}
 	}
+
+	for (int i=0; i<size; i++)
+		v.push_back(0);
 	return;
 }
 //--------------------------------------------
+void TwoZeroFourEight::rotateBoard()
+{
+	int j=0;
 
+	for (int r=0; r<4; r++)
+	{
+		for (int c=0; c<4; c++)
+		{
+			arr[c][3 + j] = game[r][c];
+		}
+		j--;
+	}
+	for (int r=0; r<size; r++)
+		for (int c=0; c<size; c++)
+		{
+			game[r][c] = arr[r][c];
+		}
+	return;
+}
+//--------------------------------------------
+void TwoZeroFourEight::collapseZerosLeft()
+{
+	int c=0;
+	for (int r=0; r<size; r++)
+	{
+		for (c=0; c<size; c++)
+			v[c] = game[r][c]; //tranfers one row at a time to a vector
+		c = 0;
+		int b=0;
+		while((c<size) && (b<size))
+			if(v[c] == zero)
+			{
+				v.erase(v.begin()+c); //if there is a zero it will be deleted
+				v.push_back(zero); //add zero on end if there was a zero deleted
+				b++;
+			}
+			else
+				c++;
+		for (int i=0; i<size; i++)
+			game[r][i] = v[i]; //tranfers new line back to game board
+	}
+}
 //--------------------------------------------
 void TwoZeroFourEight::moveLeft()
 {
+	collapseZerosLeft();
 	for (int r=0; r<size; r++)
-	{
-		for (int c=1; c<size; c++)
-		{
-			if(game[r][c-1] == zero) // cell to left is blank
+		for (int c=0; c<size-1; c++)
+			if(game[r][c] == game[r][c+1])
 			{
-				game[r][c-1] = game[r][c];
+				game[r][c] += game[r][c+1];
+				game[r][c+1] = zero;
+				collapseZerosLeft();
 			}
-			if (game[r][c] == game[r][c-1])// cells next to each other are the same
-			{ 							
-				game[r][c-1] = game[r][c-1] + game[r][c-1];
-				game[r][c] = zero;
-			}
-		}
-	}
-	return;
-}
-//--------------------------------------------
-void TwoZeroFourEight::collapseZeros()
-{
-	int c=0;
-	int j=0;
-	for (int r=0; r<size; r++)
-	{
-		while (c < size && j <size)
-		{
-			if(game[r][c] == zero)
-			{
-				game.erase(game.begin()+c);
-				game[r][3] = zero;
-				j++;
-			}
-			else
-			{
-				c++;
-			}
-		}
-	}
-}
-//--------------------------------------------
-void TwoZeroFourEight::moveRight() // seg fault
-{
-	for (int r=0; r<size; r++)
-	{
-		for (int c=2; c>0; c--)
-		{
-			if(game[r][c+1] == zero) // cell to right is blank
-			{
-				game[r][c+1] = game[r][c];
-			}
-			if (game[r][c] == game[r][c+1]) // cells next to each other are pairs
-			{
-				game[r][c+1] = game[r][c+1] + game[r][c+1];
-				game[r][c] = zero;
-			}
-		}
-	}
-	return;
-}
-//--------------------------------------------
-void TwoZeroFourEight::moveUp()
-{
-	for (int c=0; c<size; c++)
-	{
-		for (int r=1; r<size; r++)
-		{
-			if(game[r-1][c] == zero) 
-			{
-				game[r-1][c] = game[r][c];
-			}
-			if (game[r][c] == game[r-1][c])
-			{ 
-				game[r-1][c] = game[r-1][c] + game[r-1][c];
-				game[r][c] = zero;
-			}
-		}
-	}
-	return;
-}
-//--------------------------------------------
-void TwoZeroFourEight::moveDown()
-{
-	for (int c=0; c<size; c++)
-	{
-		for (int r=2; r>0; r--)
-		{
-			if(game[r+1][c] == zero)
-			{
-				game[r+1][c] = game[r][c];
-			}
-			if (game[r][c] == game[r+1][c])
-			{
-				game[r+1][c] = game[r+1][c] + game[r+1][c];
-				game[r][c] = zero;
-			}
-		}
-	}
 	return;
 }
 //--------------------------------------------
 void TwoZeroFourEight::printGame()
 {
-	for (int r=0; r<size; r++)
+	for (int r=zero; r<size; r++)
 	{
-		for (int c=0; c<size; c++)
-		{
+		for (int c=zero; c<size; c++)
 			cout << setw(5) << game[r][c] << " ";
-		}
 		cout << endl;
 	}
 	return;
@@ -180,15 +136,12 @@ bool TwoZeroFourEight::gameOver()
 		{
 			if(game[r][c] == zero)
 			{
-				end = false;
-			}
-			else
-			{
-				end = true;
+				return false;
+				break;
 			}
 		}
 	}
-	return end;
+	return true;
 }
 //--------------------------------------------
 bool TwoZeroFourEight::gameWin()
@@ -211,7 +164,17 @@ bool TwoZeroFourEight::gameWin()
 	}
 }
 //--------------------------------------------
-void TwoZeroFourEight::addRandomTIle()
+bool TwoZeroFourEight::movement(int j[4][4]) // check to see if tiles moved
+{
+	for (int r=0; r<size; r++)
+		for (int c=0; c<size; c++)
+			if (j[r][c] != game[r][c])
+				return true; // if tiles move we will add a tile
+
+	return false;
+}
+
+void TwoZeroFourEight::addRandomTile()
 {
 	srand (time(NULL));
 	int tile = 0;
@@ -261,43 +224,54 @@ void TwoZeroFourEight::playGame()
 	char down = 's';
 	char right = 'd';
 	char up = 'w';
-	bool endGame;
-	bool winGame;
 
 	cout << "Enter \'r\' to end the game." << endl;
-	addRandomTIle();
-	addRandomTIle();
+	addRandomTile();
+	addRandomTile();
 	printGame();
 
 	while (cmd!='r')
 	{
-		cin >> cmd;
-		if (cmd == left)
-		{
+		for (int r=0; r<size; r++)
+			for (int c=0; c<size; c++)
+				b[r][c] = game[r][c];
+		cin >> cmd;// cmd = getch();
+		if (cmd == left) // arrow key 68
 			moveLeft();
-		}
-		if (cmd == right)
+		if (cmd == right) // arrow key 67
 		{
-			moveRight();
+			rotateBoard();
+			rotateBoard();
+			moveLeft();
+			rotateBoard();
+			rotateBoard();
 		}
-		if (cmd == down)
+		if (cmd == down) // arrow key 66
 		{
-			moveDown();
+			rotateBoard();
+			moveLeft();
+			rotateBoard();
+			rotateBoard();
+			rotateBoard();
 		}
-		if (cmd == up)
+		if (cmd == up) // arrow key 65
 		{
-			moveUp();
+			rotateBoard();
+			rotateBoard();
+			rotateBoard();
+			moveLeft();
+			rotateBoard();
 		}
-		addRandomTIle();
+			
+		if (movement(b) == true)
+			addRandomTile();
 		printGame();
-		winGame = gameWin();
-		if (winGame == true)
+		if (gameWin() == true)
 		{
 			cmd = 'r';
 			cout <<"Congrats Johnny"<< endl;
 		}
-		endGame = gameOver();
-		if (endGame == true)
+		if (gameOver() == true)
 		{
 			cmd = 'r';
 			cout <<"Thanks for playing. Bitch."<< endl;
