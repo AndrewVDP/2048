@@ -127,21 +127,35 @@ void TwoZeroFourEight::printGame()
 	return;
 }
 //--------------------------------------------
-bool TwoZeroFourEight::gameOver()
+bool TwoZeroFourEight::gameOver() //not game over when you can still move with no 0's
 {
-	bool end = false;
+	bool end = true;
 	for (int r=0; r<size; r++)
 	{
 		for (int c=0; c<size; c++)
 		{
 			if(game[r][c] == zero)
 			{
-				return false;
+				end = false;
 				break;
 			}
 		}
 	}
-	return true;
+	for (int i=0; i<4; i++)
+	{
+		for (int r=0; r<size; r++)
+		{
+			for (int c=0; c<size-1; c++)
+			{
+				if(game[r][c] == game[r][c+1])
+				{
+					end = false;
+				}
+			}
+		}
+		rotateBoard();
+	}
+	return end;
 }
 //--------------------------------------------
 bool TwoZeroFourEight::gameWin()
@@ -155,13 +169,9 @@ bool TwoZeroFourEight::gameWin()
 				return true;
 				break;
 			}
-			else
-			{
-				return false;
-				break;
-			}
 		}
 	}
+	return false;
 }
 //--------------------------------------------
 bool TwoZeroFourEight::movement(int j[4][4]) // check to see if tiles moved
@@ -169,7 +179,7 @@ bool TwoZeroFourEight::movement(int j[4][4]) // check to see if tiles moved
 	for (int r=0; r<size; r++)
 		for (int c=0; c<size; c++)
 			if (j[r][c] != game[r][c])
-				return true; // if tiles move we will add a tile
+				return true; // if tiles move tile is added
 
 	return false;
 }
