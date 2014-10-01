@@ -279,12 +279,12 @@ void TwoZeroFourEight::playGame()
 		if (gameWin() == true)
 		{
 			cmd = 'r';
-			cout <<"Congrats Johnny"<< endl;
+			cout <<"Congrats!"<< endl;
 		}
 		if (gameOver() == true)
 		{
 			cmd = 'r';
-			cout <<"Thanks for playing. Bitch."<< endl;
+			cout <<"Thanks for playing."<< endl;
 		}
 	}
 	return;
